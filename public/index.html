@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Me AI - Interactive LinkedIn Chatbot</title>
+  <meta name="description" content="A local AI chatbot that answers questions based exclusively on your LinkedIn profile.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar: Profile & Knowledge Base Management -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-title">Profile Bot</h1>
+            <span class="badge-local">Local Engine</span>
+          </div>
+        </div>
+        <button id="toggle-sidebar-btn" class="icon-btn mobile-only" aria-label="Toggle Sidebar">
+          ✕
+        </button>
+      </div>
+
+      <!-- Current Profile Card -->
+      <div class="panel-section">
+        <div class="section-title-row">
+          <span class="section-label">Active Knowledge Base</span>
+          <span id="profile-status-badge" class="status-pill status-loading">Checking...</span>
+        </div>
+
+        <div class="profile-card" id="profile-card">
+          <div class="profile-card-header">
+            <div class="avatar-ph" id="profile-initials">ME</div>
+            <div class="profile-meta">
+              <h3 id="profile-name" class="profile-name">No Profile Loaded</h3>
+              <p id="profile-sub" class="profile-sub">Upload your LinkedIn data</p>
+            </div>
+          </div>
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span class="stat-value" id="profile-char-count">0</span>
+              <span class="stat-label">Characters</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="profile-section-count">0</span>
+              <span class="stat-label">Sections</span>
+            </div>
+          </div>
+          <button id="view-markdown-btn" class="btn btn-secondary btn-sm w-full">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Preview Profile Markdown
+          </button>
+        </div>
+      </div>
+
+      <!-- Source Input: Upload or URL -->
+      <div class="panel-section">
+        <span class="section-label">Update or Replace Profile</span>
+
+        <div class="tabs">
+          <button class="tab-btn active" id="tab-upload-btn" data-target="upload-tab">Upload File</button>
+          <button class="tab-btn" id="tab-url-btn" data-target="url-tab">Web URL</button>
+        </div>
+
+        <!-- Upload Tab Pane -->
+        <div class="tab-pane active" id="upload-tab">
+          <div class="drop-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt,.html,.htm,.md" hidden>
+            <div class="drop-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <p class="drop-text">Drag & drop or <span class="drop-highlight">browse</span></p>
+            <span class="drop-hint">PDF, DOCX, DOC, TXT, HTML, MD (max 15MB)</span>
+          </div>
+          <div id="file-selected-info" class="selected-file-info hidden">
+            <span id="selected-file-name" class="file-name">filename.pdf</span>
+            <button id="cancel-file-btn" class="icon-btn-sm" title="Remove file">✕</button>
+          </div>
+          <button id="submit-file-btn" class="btn btn-primary w-full mt-2" disabled>
+            Extract & Replace Profile
+          </button>
+        </div>
+
+        <!-- URL Tab Pane -->
+        <div class="tab-pane" id="url-tab">
+          <div class="input-group">
+            <label for="url-input" class="input-label">Public Webpage / Profile URL</label>
+            <input type="url" id="url-input" class="text-input" placeholder="https://example.com/profile">
+          </div>
+          <p class="input-help">
+            Note: Direct LinkedIn URLs often have login walls. If blocked, download your profile as PDF/HTML and upload.
+          </p>
+          <button id="submit-url-btn" class="btn btn-primary w-full mt-2">
+            Fetch & Convert Webpage
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer info -->
+      <div class="sidebar-footer">
+        <div class="rules-box">
+          <div class="rules-header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            Strict Grounding Policy
+          </div>
+          <p class="rules-body">
+            Answers strictly in 1st person based only on your profile Markdown. If information is missing, replies: <em>"My profile does not include that information."</em>
+          </p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Container -->
+    <main class="chat-container">
+      <!-- Chat Header -->
+      <header class="chat-header">
+        <div class="chat-header-left">
+          <button id="open-sidebar-btn" class="icon-btn mobile-only" aria-label="Open Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="agent-info">
+            <div class="agent-avatar">
+              <span class="status-dot"></span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a4 4 0 0 0-4 4v1H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"></path>
+                <circle cx="9" cy="13" r="1"></circle>
+                <circle cx="15" cy="13" r="1"></circle>
+              </svg>
+            </div>
+            <div>
+              <h2 class="agent-title">Interactive AI Persona</h2>
+              <span class="agent-desc">First-person answers grounded in your profile</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-header-actions">
+          <button id="clear-chat-btn" class="btn btn-secondary btn-sm" title="Clear conversation history">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Clear Chat
+          </button>
+        </div>
+      </header>
+
+      <!-- Chat Messages Scroll Area -->
+      <div class="messages-area" id="messages-area">
+        <!-- Welcome Hero Banner -->
+        <div class="welcome-card" id="welcome-card">
+          <div class="welcome-badge">Grounded Personal AI</div>
+          <h3 class="welcome-title">Ask me anything about my experience, skills, and background!</h3>
+          <p class="welcome-sub">
+            I answer strictly in first-person based on my loaded LinkedIn profile. Try one of the quick suggestions below or type your own question.
+          </p>
+
+          <div class="suggestion-chips">
+            <button class="chip" data-question="What is your current role and what are your main responsibilities?">
+              💼 What is your current role?
+            </button>
+            <button class="chip" data-question="What are your core technical skills and tools?">
+              🛠️ What are your top skills?
+            </button>
+            <button class="chip" data-question="Where did you go to school and what did you study?">
+              🎓 Where did you study?
+            </button>
+            <button class="chip" data-question="What are some of your proudest achievements or projects?">
+              🚀 What are your top achievements?
+            </button>
+            <button class="chip" data-question="Do you speak any languages besides English?">
+              🌐 What languages do you speak?
+            </button>
+            <button class="chip" data-question="What is your favorite video game?">
+              ❓ What is your favorite video game? (Test unmentioned info)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator hidden" id="typing-indicator">
+        <div class="typing-bubble">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <span class="typing-text">Thinking...</span>
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="input-container">
+        <form id="chat-form" class="chat-form">
+          <textarea
+            id="chat-input"
+            class="chat-textarea"
+            rows="1"
+            placeholder="Ask a question about my experience, education, skills..."
+            aria-label="Message input"
+          ></textarea>
+          <button type="submit" id="send-btn" class="send-btn" aria-label="Send message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+        <div class="input-footnote">
+          Answers reference <code>data/linkedin_profile.md</code>. Powered by OpenAI with zero vector DB overhead.
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Markdown Preview Modal -->
+  <div class="modal-overlay hidden" id="preview-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Active LinkedIn Profile Markdown</h3>
+            <span class="modal-subtitle">Saved at <code>data/linkedin_profile.md</code></span>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="copy-markdown-btn" class="btn btn-secondary btn-sm">Copy</button>
+          <button id="close-modal-btn" class="icon-btn" aria-label="Close modal">✕</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <pre><code id="markdown-code-view" class="code-block">Loading profile...</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
